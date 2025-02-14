@@ -1,16 +1,22 @@
-name: Destroy Terraform Infrastructure
+name: Destroy Infrastructure
 
 on:
   workflow_dispatch:  
 
 jobs:
   destroy:
-    name: Destroy Infrastructure
+    name: Destroy Terraform Infrastructure
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+
+      - name: Download Terraform Outputs
+        uses: actions/download-artifact@v3
+        with:
+          name: terraform-outputs
+          path: terraform
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -22,25 +28,12 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-south-1
-
-      - name: Export API Key
-        run: echo "TF_VAR_API_KEY=${{ secrets.TF_VAR_API_KEY }}" >> $GITHUB_ENV
+          aws-region: ap-south-1 
 
       - name: Initialize Terraform
-        run: terraform init -force-copy
+        run: terraform init
         working-directory: terraform
-        env:
-          TF_VAR_api_key: ${{ secrets.TF_VAR_API_KEY }}
 
-      - name: Refresh Terraform State
-        run: terraform refresh
-        working-directory: terraform
-        env:
-          TF_VAR_api_key: ${{ secrets.TF_VAR_API_KEY }}
-
-      - name: Force Terraform Destroy
+      - name: Destroy Infrastructure
         run: terraform destroy -auto-approve
         working-directory: terraform
-        env:
-          TF_VAR_api_key: ${{ secrets.TF_VAR_API_KEY }}
