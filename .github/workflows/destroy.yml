@@ -1,7 +1,7 @@
 name: Destroy Infrastructure
 
 on:
-  workflow_dispatch:  # Manual trigger
+  workflow_dispatch:
 
 jobs:
   destroy:
@@ -24,17 +24,15 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-1
 
-      - name: Download Terraform Outputs
-        uses: actions/download-artifact@v4
-        with:
-          name: terraform-outputs
-          path: terraform
-
       - name: Export API Key
         run: echo "TF_VAR_API_KEY=${{ secrets.TF_VAR_API_KEY }}" >> $GITHUB_ENV
 
       - name: Initialize Terraform
-        run: terraform init
+        run: |
+          terraform init \
+            -backend-config="bucket=terraformdataforchatbot" \
+            -backend-config="key=terraform.tfstate" \
+            -backend-config="region=ap-south-1"
         working-directory: terraform
 
       - name: Plan Destroy
@@ -42,15 +40,6 @@ jobs:
         working-directory: terraform
         env:
           TF_VAR_API_KEY: ${{ secrets.TF_VAR_API_KEY }}
-
-      - name: Confirm Destroy
-        run: |
-          echo "Are you sure you want to destroy all resources? Type 'yes' to confirm:"
-          read confirmation
-          if [ "$confirmation" != "yes" ]; then
-            echo "Destroy cancelled"
-            exit 1
-          fi
 
       - name: Destroy Infrastructure
         run: terraform destroy -auto-approve

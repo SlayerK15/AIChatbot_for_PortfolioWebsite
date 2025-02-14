@@ -3,7 +3,7 @@ name: Build, Push to Docker Hub, and Deploy with Terraform
 on:
   push:
     branches:
-      - main  # Runs when code is pushed to the main branch
+      - main
 
 jobs:
   build-and-push:
@@ -30,7 +30,7 @@ jobs:
   deploy:
     name: Deploy with Terraform
     runs-on: ubuntu-latest
-    needs: build-and-push  # Runs only after the image is built and pushed
+    needs: build-and-push
 
     steps:
       - name: Checkout Code
@@ -47,12 +47,16 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-1 
-      
+
       - name: Export API Key
         run: echo "TF_VAR_API_KEY=${{ secrets.TF_VAR_API_KEY }}" >> $GITHUB_ENV
-      
+
       - name: Initialize Terraform
-        run: terraform init
+        run: |
+          terraform init \
+            -backend-config="bucket=terraformdataforchatbot" \
+            -backend-config="key=terraform.tfstate" \
+            -backend-config="region=ap-south-1"
         working-directory: terraform
 
       - name: Plan Terraform Changes
@@ -67,12 +71,3 @@ jobs:
         env: 
           TF_VAR_API_KEY: ${{ secrets.TF_VAR_API_KEY }}
 
-      - name: Save Terraform Outputs
-        run:  terraform output -json > terraform_outputs.json
-        working-directory: terraform
-  
-      - name: Upload Terraform Outputs as Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: terraform-outputs
-          path: terraform/terraform_outputs.json
