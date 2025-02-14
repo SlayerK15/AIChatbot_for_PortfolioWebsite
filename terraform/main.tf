@@ -1,3 +1,4 @@
+# main.tf
 provider "aws" {
   region = "ap-south-1"
 }
@@ -52,7 +53,7 @@ resource "aws_ecs_cluster" "chatbot_cluster" {
   name = "portfolio-chatbot-cluster"
 }
 
-# Create ECS Task Definition
+# Create ECS Task Definition - Removed ECS service reference
 resource "aws_ecs_task_definition" "chatbot_task" {
   family                   = "portfolio-chatbot-task"
   network_mode             = "awsvpc"
@@ -72,10 +73,6 @@ resource "aws_ecs_task_definition" "chatbot_task" {
         {
           name  = "ANTHROPIC_API_KEY"
           value = var.API_KEY
-        },
-        {
-          name  = "ECS_SERVICE_URL"
-          value = "http://${aws_ecs_service.chatbot_service.name}.${aws_ecs_cluster.chatbot_cluster.name}"
         },
         {
           name  = "FRONTEND_URL"
