@@ -56,4 +56,4 @@ jobs:
         run: terraform apply -auto-approve
         working-directory: terraform
         env:
-          TF_VAR_api_key: ${{ secrets.TF_VAR_api_key }}
+          TF_VAR_api_key: ${{ secrets.TF_VAR_API_KEY }}
