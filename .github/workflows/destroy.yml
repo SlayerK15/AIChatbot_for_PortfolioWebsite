@@ -24,6 +24,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-1
 
+      - name: Export API Key
+        run: echo "TF_VAR_API_KEY=${{ secrets.TF_VAR_API_KEY }}" >> $GITHUB_ENV
+
       - name: Initialize Terraform
         run: terraform init
         working-directory: terraform
