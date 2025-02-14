@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from anthropic import Anthropic
 import os
@@ -7,7 +7,7 @@ import re
 app = Flask(__name__)
 CORS(app)
 
-client = Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
+client = Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'), base_url="https://api.anthropic.com")
 
 def create_system_message():
     return """You are a helpful assistant for Kanav Gathe's portfolio website. Your role is to provide specific, concise information about his work, experience, and contact methods.
@@ -20,6 +20,10 @@ def create_system_message():
     5. For vague questions, highlight his most impressive projects
     6. Use bullet points sparingly and only for listing multiple projects
     7. For contact questions, mention both the EmailJS form and direct contact methods
+    8. For questions about the chatbot itself, explain that you're a Flask-based portfolio assistant created by Kanav using Python, Flask, and the Anthropic Claude API
+    9. NEVER generate or make up repository links - only use the exact social links provided
+    10. For questions about source code or repositories, direct users to Kanav's GitHub profile
+    11. For deployment questions, mention that the frontend is hosted on Netlify and the chatbot backend runs on AWS ECS
 
     Tone guidelines:
     - Be professional but conversational
@@ -28,23 +32,40 @@ def create_system_message():
     - Stay factual and specific
     """
 
+def handle_social_query(message):
+    social_keywords = ['github', 'linkedin', 'social', 'profile', 'repository', 'repo', 'source code', 'source']
+    if any(keyword in message.lower() for keyword in social_keywords):
+        return True, "You can find Kanav on GitHub at https://github.com/SlayerK15 and LinkedIn at https://www.linkedin.com/in/gathekanav/."
+    return False, None
+
+def handle_chatbot_query(message):
+    chatbot_keywords = ['who made you', 'what are you', 'how were you made', 'what technologies', 
+                       'why were you made', 'your purpose', 'what is your purpose', 
+                       'how do you work', 'tell me about yourself']
+    if any(keyword in message.lower() for keyword in chatbot_keywords):
+        return True, "I'm a portfolio assistant created by Kanav Gathe using Python, Flask, and the Anthropic Claude API. I was built to help visitors learn about Kanav's DevOps projects and experience, particularly his work with AWS cloud infrastructure and containerization."
+    return False, None
+
+def handle_deployment_query(message):
+    deployment_keywords = ['deployed', 'hosting', 'where are you hosted', 'where do you run', 
+                         'which service', 'infrastructure', 'container', 'ecs', 'aws']
+    if any(keyword in message.lower() for keyword in deployment_keywords):
+        return True, "The portfolio frontend is hosted on Netlify for optimal performance, while this chatbot runs as a containerized Flask application on AWS ECS. This demonstrates Kanav's expertise in both cloud platforms and containerization."
+    return False, None
+
 def handle_greeting(message):
-    # Expanded greetings patterns
     basic_greetings = ['hi', 'hello', 'hey', 'greetings']
     time_greetings = ['good morning', 'good afternoon', 'good evening']
     how_are_you = ['how are you', 'how r u', 'how you', 'how r you', 'how are u']
     
     message = message.lower().strip()
     
-    # Handle "how are you" type messages
     if any(greeting in message for greeting in how_are_you):
         return True, "I'm doing great, thanks for asking! Would you like to connect with Kanav or need help exploring his projects?"
     
-    # Handle basic greetings
     if any(message == greeting for greeting in basic_greetings):
         return True, "Hello! Would you like to connect with Kanav or need help exploring his projects?"
     
-    # Handle time-based greetings
     if any(greeting in message for greeting in time_greetings):
         return True, f"{message.title()}! Would you like to connect with Kanav or need help exploring his projects?"
     
@@ -62,6 +83,12 @@ def handle_project_query(message):
         return True, "Kanav has built six impressive projects including an AI-powered laptop recommendation system and a containerized compiler infrastructure on AWS ECS. Which project would you like to know more about?"
     return False, None
 
+def handle_skills_query(message):
+    skills_keywords = ['skill', 'technology', 'tech stack', 'expertise', 'experience', 'know']
+    if any(keyword in message.lower() for keyword in skills_keywords):
+        return True, "Kanav specializes in AWS cloud services (EC2, ECS, S3), Docker, Kubernetes, and Terraform. He has extensive experience building CI/CD pipelines with Jenkins and managing Linux infrastructure."
+    return False, None
+
 @app.route('/chat', methods=['POST'])
 def chat():
     try:
@@ -74,7 +101,31 @@ def chat():
                 'response': "Would you like to connect with Kanav or need help exploring his projects?"
             })
 
-        # Check for greetings first
+        # Check for social media/repository queries first
+        is_social_query, social_response = handle_social_query(user_message)
+        if is_social_query:
+            return jsonify({
+                'status': 'success',
+                'response': social_response
+            })
+
+        # Check for deployment queries
+        is_deployment_query, deployment_response = handle_deployment_query(user_message)
+        if is_deployment_query:
+            return jsonify({
+                'status': 'success',
+                'response': deployment_response
+            })
+
+        # Check for chatbot-related queries
+        is_chatbot_query, chatbot_response = handle_chatbot_query(user_message)
+        if is_chatbot_query:
+            return jsonify({
+                'status': 'success',
+                'response': chatbot_response
+            })
+
+        # Check for greetings
         is_greeting, greeting_response = handle_greeting(user_message)
         if is_greeting:
             return jsonify({
@@ -98,13 +149,25 @@ def chat():
                 'response': project_response
             })
 
-        # Create focused context about portfolio
+        # Check for skills queries
+        is_skills, skills_response = handle_skills_query(user_message)
+        if is_skills:
+            return jsonify({
+                'status': 'success',
+                'response': skills_response
+            })
+
+        # Create focused context about portfolio for Claude API
         context = f"""{create_system_message()}
 
         Portfolio Information:
         - Role: DevOps Engineer
         - Expertise: AWS cloud, CI/CD pipelines, infrastructure automation
         - Technical Skills: AWS (EC2, ECS, S3), Docker, Kubernetes, Terraform, Jenkins, Linux
+        
+        Social Links:
+        - GitHub: https://github.com/SlayerK15
+        - LinkedIn: https://www.linkedin.com/in/gathekanav/
         
         Contact Information:
         - Email: gathekanav@gmail.com
@@ -162,9 +225,13 @@ def chat():
         
         response = message.content[0].text.strip()
 
-        # Clean up response
-        response = re.sub(r'\s+', ' ', response)  # Remove extra whitespace
+        # Clean up response and check for fake links
+        response = re.sub(r'\s+', ' ', response)
         response = response.strip()
+        
+        # If response contains github.com but not the correct profile, redirect to actual profile
+        if 'github.com' in response.lower() and 'github.com/SlayerK15' not in response:
+            response = "You can find Kanav's projects on his GitHub profile at https://github.com/SlayerK15"
 
         # Fallback if response is too generic
         if any(phrase in response.lower() for phrase in [
@@ -189,6 +256,17 @@ def chat():
             'status': 'error',
             'message': "I'm having trouble connecting right now. Please try again in a moment."
         }), 500
+
+@app.route('/')
+def index():
+    return send_from_directory('static', 'index.html')
+
+@app.route('/health')
+def health_check():
+    return jsonify({
+        'status': 'healthy',
+        'message': 'Service is running'
+    })
     
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

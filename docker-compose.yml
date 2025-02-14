@@ -1,0 +1,16 @@
+services:
+  portfolio-chatbot:
+    image: slayerop15/portfolio-chatbot:latest  # Pulls from Docker Hub
+    container_name: portfolio-chatbot
+    restart: always
+    ports:
+      - "5000:5000"  # Maps port 5000 of the container to port 5000 on the host
+    environment:
+      FLASK_ENV: production
+      FLASK_APP: app.py
+    networks:
+      - chatbot-network
+
+networks:
+  chatbot-network:
+    driver: bridge
