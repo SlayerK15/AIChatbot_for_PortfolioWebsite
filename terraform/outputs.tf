@@ -13,12 +13,3 @@ output "ecs_task_definition_arn" {
   value       = aws_ecs_task_definition.chatbot_task.arn
 }
 
-output "ecs_public_ip" {
-  description = "The public IP assigned to the ECS service"
-  value       = aws_lb.chatbot_lb.dns_name
-}
-
-output "ecs_public_url" {
-  description = "The public URL for accessing the chatbot service"
-  value       = "http://${aws_lb.chatbot_lb.dns_name}:80"
-}
