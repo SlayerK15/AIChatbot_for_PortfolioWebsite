@@ -24,20 +24,19 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-1
 
-      - name: Export API Key
-        run: echo "TF_VAR_API_KEY=${{ secrets.TF_VAR_API_KEY }}" >> $GITHUB_ENV
-
       - name: Initialize Terraform
-        run: terraform init
-        working-directory: terraform
-
-      - name: Plan Terraform Destroy
-        run: terraform plan -destroy
+        run: terraform init -force-copy
         working-directory: terraform
         env:
           TF_VAR_api_key: ${{ secrets.TF_VAR_API_KEY }}
 
-      - name: Destroy Infrastructure
+      - name: Refresh Terraform State
+        run: terraform refresh
+        working-directory: terraform
+        env:
+          TF_VAR_api_key: ${{ secrets.TF_VAR_API_KEY }}
+
+      - name: Force Terraform Destroy
         run: terraform destroy -auto-approve
         working-directory: terraform
         env:
