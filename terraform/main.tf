@@ -69,10 +69,10 @@ resource "aws_ecs_task_definition" "chatbot_task" {
       memory    = 1024
       essential = true
       environment = [
-        {
-          name  = "API_KEY"
-          value = var.API_KEY
-        }
+      {
+        name  = "API_KEY"
+        value = "${lookup(var.API_KEY, "default", "")}"
+      }
       ],
       portMappings = [
         {
