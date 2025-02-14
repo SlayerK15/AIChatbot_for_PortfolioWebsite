@@ -3,8 +3,3 @@ variable "API_KEY" {
   type        = string
   sensitive   = true
 }
-
-variable "FRONTEND_URL" {
-  description = "URL of the frontend application"
-  type        = string
-}
