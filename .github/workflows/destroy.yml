@@ -31,6 +31,8 @@ jobs:
       - name: Plan Terraform Destroy
         run: terraform plan -destroy
         working-directory: terraform
+        env:
+          TF_VAR_api_key: ${{ secrets.TF_VAR_API_KEY }}
 
       - name: Destroy Infrastructure
         run: terraform destroy -auto-approve
