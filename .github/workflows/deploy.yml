@@ -14,6 +14,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Update API URL
+        run: |
+          sed -i 's|http://localhost:5000/chat|${window.location.origin}/chat|g' static/index.html
+
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
@@ -72,4 +76,3 @@ jobs:
         with:
           name: terraform-outputs
           path: terraform/terraform_outputs.json
-  

@@ -1,11 +1,30 @@
+# 1. app.py
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from anthropic import Anthropic
 import os
 import re
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+
+# Configure CORS with allowed origins
+ALLOWED_ORIGINS = [
+    'http://localhost:5000',  # Local development
+    os.getenv('FRONTEND_URL', ''),  # Production frontend URL
+    os.getenv('ECS_SERVICE_URL', '')  # ECS service URL
+]
+
+CORS(app, resources={
+    r"/chat": {
+        "origins": [origin for origin in ALLOWED_ORIGINS if origin],
+        "methods": ["POST"],
+        "allow_headers": ["Content-Type"]
+    }
+})
 
 client = Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'), base_url="https://api.anthropic.com")
 
@@ -269,4 +288,4 @@ def health_check():
     })
     
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=os.getenv('FLASK_ENV') == 'development')

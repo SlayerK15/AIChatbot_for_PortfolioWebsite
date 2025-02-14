@@ -69,15 +69,23 @@ resource "aws_ecs_task_definition" "chatbot_task" {
       memory    = 1024
       essential = true
       environment = [
-      {
-        name  = "API_KEY"
-        value = "${var.API_KEY}"
-      }
+        {
+          name  = "ANTHROPIC_API_KEY"
+          value = var.API_KEY
+        },
+        {
+          name  = "ECS_SERVICE_URL"
+          value = "http://${aws_ecs_service.chatbot_service.name}.${aws_ecs_cluster.chatbot_cluster.name}"
+        },
+        {
+          name  = "FRONTEND_URL"
+          value = var.FRONTEND_URL
+        }
       ],
       portMappings = [
         {
-          containerPort = 80
-          hostPort      = 80
+          containerPort = 5000
+          hostPort      = 5000
         }
       ]
     }
