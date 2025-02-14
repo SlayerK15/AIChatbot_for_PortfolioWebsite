@@ -71,7 +71,7 @@ resource "aws_ecs_task_definition" "chatbot_task" {
       environment = [
       {
         name  = "API_KEY"
-        value = "${lookup(var.API_KEY, "default", "")}"
+        value = var.api_key
       }
       ],
       portMappings = [
