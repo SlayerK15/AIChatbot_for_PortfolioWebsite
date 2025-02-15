@@ -108,6 +108,18 @@ def handle_skills_query(message):
         return True, "Kanav specializes in AWS cloud services (EC2, ECS, S3), Docker, Kubernetes, and Terraform. He has extensive experience building CI/CD pipelines with Jenkins and managing Linux infrastructure."
     return False, None
 
+def handle_certification_query(message):
+    cert_keywords = ['certification', 'certificate', 'certified', 'courses', 'training', 'badge', 'achievement']
+    if any(keyword in message.lower() for keyword in cert_keywords):
+        return True, "Kanav is a Google Cloud Silver League member (4140 points) with certifications in Google Cloud Fundamentals and SRE Culture. He also holds certifications in Docker (KodeKloud), Git/GitHub (IBM), and Linux Basics (KodeKloud)."
+    return False, None
+
+def handle_location_query(message):
+    location_keywords = ['where', 'location', 'city', 'based', 'live', 'stay', 'from']
+    if any(keyword in message.lower() for keyword in location_keywords):
+        return True, "Kanav is based in Amravati, Maharashtra, India, and works remotely as a DevOps Engineer, deploying solutions across multiple AWS regions globally. He has experience working with cloud infrastructure worldwide and is not limited to any specific region."
+    return False, None
+
 @app.route('/chat', methods=['POST'])
 def chat():
     try:
@@ -120,7 +132,17 @@ def chat():
                 'response': "Would you like to connect with Kanav or need help exploring his projects?"
             })
 
-        # Check for social media/repository queries first
+        # Check for location query
+        is_location, location_response = handle_location_query(user_message)
+        if is_location:
+            return jsonify({'status': 'success', 'response': location_response})
+
+        # Check for certification query
+        is_certification, certification_response = handle_certification_query(user_message)
+        if is_certification:
+            return jsonify({'status': 'success', 'response': certification_response})
+
+        # Check for social media/repository queries
         is_social_query, social_response = handle_social_query(user_message)
         if is_social_query:
             return jsonify({
@@ -181,8 +203,19 @@ def chat():
 
         Portfolio Information:
         - Role: DevOps Engineer
+        - Location: Amravati, Maharashtra, India (Open to Global Remote Work)
         - Expertise: AWS cloud, CI/CD pipelines, infrastructure automation
         - Technical Skills: AWS (EC2, ECS, S3), Docker, Kubernetes, Terraform, Jenkins, Linux
+        
+        Certifications & Achievements:
+        - Google Cloud Fundamentals: Core Infrastructure (Google Cloud)
+        - Developing a Google SRE Culture (Google Cloud)        
+        - Git/GitHub (IBM)
+        - Linux Basics (KodeKloud)
+        - Amazon Elastic Container Service (KodeKloud)
+        - Docker Training Course for the Absolute Beginner (KodeKloud)
+        - Shell Scripts for Beginners (KodeKloud)
+        - 12 Factor App (KodeKloud)
         
         Social Links:
         - GitHub: https://github.com/SlayerK15
