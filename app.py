@@ -111,7 +111,7 @@ def handle_skills_query(message):
 def handle_certification_query(message):
     cert_keywords = ['certification', 'certificate', 'certified', 'courses', 'training', 'badge', 'achievement']
     if any(keyword in message.lower() for keyword in cert_keywords):
-        return True, "Kanav is a Google Cloud Silver League member (4140 points) with certifications in Google Cloud Fundamentals and SRE Culture. He also holds certifications in Docker (KodeKloud), Git/GitHub (IBM), and Linux Basics (KodeKloud)."
+        return True, "Kanav holds certifications in Google Cloud Fundamentals, SRE Culture, AWS ECS, Docker (KodeKloud), Shell Scripting, and Linux Basics. He is currently pursuing the Professional Cloud DevOps Engineer Certification by GCP."
     return False, None
 
 def handle_location_query(message):
@@ -204,22 +204,23 @@ def chat():
         Portfolio Information:
         - Role: DevOps Engineer
         - Location: Amravati, Maharashtra, India (Open to Global Remote Work)
+        - Education: B.E. Computer Science, Prof.Ram Meghe Institute of Technology & Research (PRMIT&R) (2019-2023), CGPA: 8.63
         - Expertise: AWS cloud, CI/CD pipelines, infrastructure automation
         - Technical Skills: AWS (EC2, ECS, S3), Docker, Kubernetes, Terraform, Jenkins, Linux
         
         Certifications & Achievements:
-        - Google Cloud Fundamentals: Core Infrastructure (Google Cloud)
-        - Developing a Google SRE Culture (Google Cloud)        
-        - Git/GitHub (IBM)
-        - Linux Basics (KodeKloud)
-        - Amazon Elastic Container Service (KodeKloud)
-        - Docker Training Course for the Absolute Beginner (KodeKloud)
-        - Shell Scripts for Beginners (KodeKloud)
-        - 12 Factor App (KodeKloud)
+        - Google Cloud Fundamentals: Core Infrastructure
+        - Developing a Google SRE Culture
+        - AWS Elastic Container Service (ECS)
+        - Docker Training (KodeKloud)
+        - Shell Scripts for Beginners
+        - Learning Linux Basics Course & Labs
+        - Currently pursuing: Professional Cloud DevOps Engineer (GCP)
         
         Social Links:
         - GitHub: https://github.com/SlayerK15
         - LinkedIn: https://www.linkedin.com/in/gathekanav/
+        - Hashnode: https://hashnode.com/@KanavGathe
         
         Contact Information:
         - Email: gathekanav@gmail.com
